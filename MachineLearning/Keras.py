@@ -28,11 +28,15 @@ print([x for x in local_device_protos if x.device_type == 'GPU'])
 # Printing GPU information
 K.tensorflow_backend._get_available_gpus()
 
-# Avoiding memory issues with the GPU
+# Avoiding memory issues with the GPU - older API
 config = tf.ConfigProto()
 config.gpu_options.allow_growth = True
 sess = tf.Session(config=config)
 K.set_session(sess)
+
+# Avoiding memory issues with the GPU
+physical_devices = tf.config.list_physical_devices('GPU')
+tf.config.experimental.set_memory_growth(physical_devices[0], enable=True)
 
 ########################################################################################################################
 ### Convenience Functions
