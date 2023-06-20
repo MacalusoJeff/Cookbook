@@ -23,10 +23,10 @@ params = {
 model = lgb.LGBMRegressor(**params)
 print('Starting training')
 model.fit(X_train, y_train, eval_set=[(X_val, y_val)], n_jobs=-1)
-print('Done at {0} iterations'.format(model.best_iteration_))
+print('Done at {0} iterations'.format(model.booster_.best_iteration))
 
 # Predict on the test set
-y_pred = model.predict(X_test, num_iteration=model.best_iteration_)
+y_pred = model.predict(X_test, num_iteration=model.booster_.best_iteration)
 
 
 # Early stopping with the LGBM API
