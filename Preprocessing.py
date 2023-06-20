@@ -3,7 +3,7 @@ import pandas as pd
 
 
 # One-hot encoding multiple columns
-df_encoded = pd.get_dummies(df, columns=['a', 'b', 'c'], drop_first=True)
+df_encoded = pd.get_dummies(df, columns=['a', 'b', 'c'], drop_first=False)
 
 # Converting a categorical column to numbers
 df['TargetVariable'].astype('category').cat.codes
