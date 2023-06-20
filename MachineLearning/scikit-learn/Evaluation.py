@@ -24,6 +24,28 @@ pd.set_option('display.max_columns', None)
 
 %matplotlib inline
 
+
+def binary_eval_metrics(predictions: np.ndarray, labels: np.ndarray) -> dict:
+    '''Returns a dict with various evaluation metrics for binary predictions'''
+    from sklearn import metrics
+
+    # Calculating the baseline accuracy if always predicting one label
+    baseline_accuracy = labels.mean()
+    if baseline_accuracy < 0.5:
+        baseline_accuracy = 1 - baseline_accuracy
+
+    # Filling the dict with various metrics
+    results = {}
+    results['Baseline Accuracy'] = baseline_accuracy
+    results['Accuracy'] = metrics.accuracy_score(labels, predictions)
+    results['AUC'] = metrics.roc_auc_score(labels, predictions)
+    results['F1'] = metrics.f1_score(labels, predictions)
+    results['Precision'] = metrics.precision_score(labels, predictions)
+    results['Recall'] = metrics.recall_score(labels, predictions)
+
+    return results
+
+
 #################################################################################################################
 ##### Evaluation Plots
 
