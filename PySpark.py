@@ -34,3 +34,9 @@ metrics = ComputeModelStatistics(
     scoredLabelsCol='prediction',
 ).transform(predictions)
 display(metrics)
+
+# Extracting the probability of a positive class from a binary classifier
+# Borrowed from https://stackoverflow.com/questions/44425159/access-element-of-a-vector-in-a-spark-dataframe-logistic-regression-probability
+from pyspark.sql.types import FloatType
+probability_positive = F.udf(lambda v: float(v[1]), FloatType())
+predictions = predictions.withColumn('probability_positive', probability_positive('probability'))
