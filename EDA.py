@@ -34,23 +34,23 @@ profile.to_file(outputfile='/tmp/myoutputfile.html')  # Saving report as a file
 #################################################################################################################
 ##### Missing Values
 
-# Printing the percentage of missing values per column
-def percent_missing(dataframe: pd.DataFrame) -> None:
+# Returning a dict with the percentage of missing values per column
+def percent_missing(dataframe: pd.DataFrame) -> dict:
     '''
-    Prints the percentage of missing values for each column in a dataframe
+    Returns a dict with the percentage of missing values for each column in a dataframe
     '''
-    # Summing the number of missing values per column and then dividing by the total
+    # Summing the number of missing values per column and then dividing by the total number of rows
     sumMissing = dataframe.isnull().values.sum(axis=0)
     pctMissing = sumMissing / dataframe.shape[0]
+    pct_missing_by_col = {}
     
-    if sumMissing.sum() == 0:
-        print('No missing values')
-    else:
-        # Looping through and printing out each columns missing value percentage
-        print('Percent Missing Values:', '\n')
+    # Adding any columns w/ missing vlaues to the dictionary
+    if sumMissing.sum() != 0:
         for idx, col in enumerate(dataframe.columns):
             if sumMissing[idx] > 0:
-                print('{0}: {1:.2f}%'.format(col, pctMissing[idx] * 100))
+                pct_missing_by_col[col] = pctMissing[idx]
+    
+    return pct_missing_by_col
         
 
 # Plotting missing values
