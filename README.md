@@ -21,9 +21,9 @@ Personal reference scripts for commonly used code
     - **[Matplotlib.py](https://github.com/MacalusoJeff/Cookbook/tree/main/Plotting/Matplotlib.py)**
     - **[Plotly.py](https://github.com/MacalusoJeff/Cookbook/tree/main/PlottingPlotly.py)**
 - **[Misc](https://github.com/MacalusoJeff/Cookbook/tree/main/Misc):** For scripts that don't fit within any other folders
-    - **[EDA.py](https://github.com/MacalusoJeff/Cookbook/tree/main/Misc/EDA.py)**
+    - **[EDA.py](https://github.com/MacalusoJeff/Cookbook/tree/main/Misc/EDA.py):** EDA reports, missing values, and outliers
     - **[NLP.py](https://github.com/MacalusoJeff/Cookbook/tree/main/Misc/NLP.py):** NLTK natural language processing tasks
-    - **[PySpark.py](https://github.com/MacalusoJeff/Cookbook/tree/main/Misc/PySpark.py)**
+    - **[PySpark.py](https://github.com/MacalusoJeff/Cookbook/tree/main/Misc/PySpark.py):** Missing values, datatype conversions, encoding categorical columns, and prepping data for models
 - **[DevOps](https://github.com/MacalusoJeff/Cookbook/tree/main/DevOps)**: A folder containing scripts for operationalizing machine learning models
     - **[Flask](https://github.com/MacalusoJeff/Cookbook/tree/main/DevOps/Flask)**: Operationalizing a trained machine learning model as a RESTful API
         - [Web App](https://github.com/MacalusoJeff/Cookbook/blob/main/DevOps/Flask/app.py)
