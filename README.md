@@ -5,12 +5,18 @@ Personal reference scripts for commonly used code
     - **[Preprocessing.py](https://github.com/MacalusoJeff/Cookbook/blob/main/MachineLearning/Preprocessing.py):** Preparing data for machine learning tasks, primarily using pandas and sklearn
     - **[scikit-learn](https://github.com/MacalusoJeff/Cookbook/tree/main/MachineLearning/scikit-learn):** Also includes LightGBM and XGBoost
         - [ModelTraining.py](https://github.com/MacalusoJeff/Cookbook/blob/main/MachineLearning/scikit-learn/ModelTraining.py): Cross validation, hyperparameter tuning, feature selection, etc.
-        - [Evaluation.py](https://github.com/MacalusoJeff/Cookbook/blob/main/MachineLearning/scikit-learn/Evaluation.py)
-        - [LighTGBM.py](https://github.com/MacalusoJeff/Cookbook/blob/main/MachineLearning/scikit-learn/LightGBM.py)
-        - [Miscellaneous.py](https://github.com/MacalusoJeff/Cookbook/blob/main/MachineLearning/scikit-learn/Miscellaneous.py)
+        - [Evaluation.py](https://github.com/MacalusoJeff/Cookbook/blob/main/MachineLearning/scikit-learn/Evaluation.py): Evaluation plots, collecting eval metrics, learning curves, feature importance, etc.
+        - [LighTGBM.py](https://github.com/MacalusoJeff/Cookbook/blob/main/MachineLearning/scikit-learn/LightGBM.py): Early stopping and other code that's convenient to copy/paste
+        - [Miscellaneous.py](https://github.com/MacalusoJeff/Cookbook/blob/main/MachineLearning/scikit-learn/Miscellaneous.py): Code for sklearn that doesn't fit in the other categories
     - **[TensorFlow](https://github.com/MacalusoJeff/Cookbook/tree/main/MachineLearning/TensorFlow)**
+        - [Keras.py](https://github.com/MacalusoJeff/Cookbook/blob/main/MachineLearning/TensorFlow/Keras.py): Commonly used code for Keras
+        - [KerasMNIST.py](https://github.com/MacalusoJeff/Cookbook/blob/main/MachineLearning/TensorFlow/KerasMNIST.py): Training a convolutional net on the MNIST data with Keras
+        - [TensorFlowMNIST.py](https://github.com/MacalusoJeff/Cookbook/blob/main/MachineLearning/TensorFlow/TensorFlowMNIST.py): Training a convolutional net on the MNIST data with TensorFlow
     - **[PyTorch](https://github.com/MacalusoJeff/Cookbook/tree/main/MachineLearning/PyTorch)**
+        - [PyTorch.py](https://github.com/MacalusoJeff/Cookbook/blob/main/MachineLearning/PyTorch/PyTorch.py): Commonly used code for PyTorch
+        - [PyTorchMNIST.py](https://github.com/MacalusoJeff/Cookbook/blob/main/MachineLearning/PyTorch/PyTorchMNIST.py): Training a convolutional net on the MNIST data with PyTorch
     - **[SparkML](https://github.com/MacalusoJeff/Cookbook/tree/main/MachineLearning/SparkML)**
+        - [SparkML.py](https://github.com/MacalusoJeff/Cookbook/blob/main/MachineLearning/SparkML/SparkML.py): Commonly used code for SparkML. Includes preprocessing, hyperparameter tuning, cross validation, and so on.
 - **[Plotting](https://github.com/MacalusoJeff/Cookbook/tree/main/Plotting):** Code snippets for common plots
     - **[Matplotlib.py](https://github.com/MacalusoJeff/Cookbook/tree/main/Plotting/Matplotlib.py)**
     - **[Plotly.py](https://github.com/MacalusoJeff/Cookbook/tree/main/PlottingPlotly.py)**
