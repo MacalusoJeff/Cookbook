@@ -9,7 +9,6 @@ from sklearn.model_selection import train_test_split
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-
 ##### Sample code for training a simple classifier on the iris dataset
 # Loading the data, scaling, and splitting between train/test
 data = load_iris()
@@ -94,3 +93,32 @@ for epoch in range(num_epochs):
     # Reporting reuslts every 5 epochs
     if (epoch+1) % 5 == 0:
         print(f"Epoch {epoch+1}/{num_epochs} | Train Loss: {loss.item():.4} | Train Accuracy: {accuracy:.4} | Test Loss: {test_loss.item():.4} | Test Accuracy: {test_accuracy:.4}")
+
+
+### Early stopping
+# Taken from https://stackoverflow.com/questions/71998978/early-stopping-in-pytorch/71999355#71999355
+class EarlyStopper:
+    def __init__(self, patience=1, min_delta=0):
+        self.patience = patience
+        self.min_delta = min_delta
+        self.counter = 0
+        self.min_validation_loss = np.inf
+
+    def early_stop(self, validation_loss):
+        if validation_loss < self.min_validation_loss:
+            self.min_validation_loss = validation_loss
+            self.counter = 0
+        elif validation_loss > (self.min_validation_loss + self.min_delta):
+            self.counter += 1
+            if self.counter >= self.patience:
+                return True
+        return False
+
+# Implementing the above early stopping class when training
+early_stopper = EarlyStopper(patience=3, min_delta=10)
+for epoch in np.arange(n_epochs):
+    train_loss = train_one_epoch(model, train_loader)
+    validation_loss = validate_one_epoch(model, validation_loader)
+    if early_stopper.early_stop(validation_loss):
+        print(f'Early stopping at epoch {epoch+1} with val loss of {validation_loss}')
+        break
