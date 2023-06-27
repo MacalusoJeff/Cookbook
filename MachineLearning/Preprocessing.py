@@ -221,3 +221,16 @@ def target_encode(train_variable, test_variable, train_label, smoothing=1, min_s
 
 # Percentage of total within group
 df['numbers'] / df.groupby('group')['numbers'].transform('sum')
+
+# Finding the max number of bins if using pd.qcut()
+def find_max_qcut_bins(data: np.ndarray, max_bins: int = 25) -> int:
+    '''
+    Returns the max number of bins for pd.qcut()
+    '''
+    found_max_bins = False
+    while found_max_bins == False:
+        try:
+            pd.qcut(data, q=max_bins)
+            return max_bins
+        except:
+            max_bins -= 1

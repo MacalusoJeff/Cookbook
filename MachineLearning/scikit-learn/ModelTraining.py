@@ -22,8 +22,6 @@ sns.set_style('ticks')
 # Displays all dataframe columns
 pd.set_option('display.max_columns', None)
 
-%matplotlib inline
-
 #################################################################################################################
 ##### Cross Validation
 

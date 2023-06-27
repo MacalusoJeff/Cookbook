@@ -22,9 +22,6 @@ sns.set_style('ticks')
 # Displays all dataframe columns
 pd.set_option('display.max_columns', None)
 
-%matplotlib inline
-
-
 def binary_eval_metrics(predictions: np.ndarray, labels: np.ndarray) -> dict:
     '''Returns a dict with various evaluation metrics for binary predictions'''
     from sklearn import metrics
