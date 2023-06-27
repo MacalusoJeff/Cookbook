@@ -1,3 +1,5 @@
+# Note: Some of this code may be out of date due to being written in ~2016
+
 import sys
 import time
 import numpy as np
