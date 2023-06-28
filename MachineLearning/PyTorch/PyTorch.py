@@ -122,3 +122,27 @@ for epoch in np.arange(n_epochs):
     if early_stopper.early_stop(validation_loss):
         print(f'Early stopping at epoch {epoch+1} with val loss of {validation_loss}')
         break
+
+
+### Using the data loader for mini batches while training
+# Assuming the data is in a numpy array for this snippet
+from torch.utils.data import TensorDataset, DataLoader
+X = torch.from_numpy(X).float()
+y = torch.from_numpy(y).long()
+dataset = TensorDataset(X, y)
+dataloader = DataLoader(dataset, batch_size=128, shuffle=True)
+
+n_epochs = 50
+for epoch in range(n_epochs):
+    # Calculate the loss at the beginning of the epoch
+    optimizer.zero_grad()
+    y_pred = model.forward(X)
+    loss = criterion(y_pred, y)
+    losses.append(loss)
+    # Update the model params within the mini batches
+    for X_batch, y_batch in dataloader:
+        y_pred = model.forward(X_batch)
+        loss = criterion(y_pred, y_batch)
+        loss.backward()
+        optimizer.step()
+    
