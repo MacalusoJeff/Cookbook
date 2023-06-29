@@ -22,20 +22,19 @@ X_normalized = normalizer.fit_transform(X)  # Normalizing across columns
 df.groupby(['level_1', 'level_2']).size().groupby(level='level_1').apply(lambda x: x / x.sum())
 
 # Principal Component Analysis (PCA)
-def fit_PCA(X: np.ndarray, num_components: float = 0.99) -> np.ndarray:
-    '''
-    Performs min-max normalization and PCA transformation on the input data array
+def fit_PCA(X: np.ndarray, num_components: float or int = 0.99) -> np.ndarray:
+    """
+    Performs min-max normalization and PCA transformation on the input data array.
     
-    Inputs:
-        - X: An array of values to perform PCA on
-        - num_components: If >1, the number of principal components desired
-                          If <1, the percentage of variance explained desired
+    Args:
+        X (np.ndarray): Values to perform PCA on.
+        num_components (float or int):
+            If <1, the percentage of variance explained.
+            If >1, the number of principal components.
     
-    Outputs:
-        - An array of the principal components
-        
-    TODO: Add check if data is already normalized
-    '''
+    Returns:
+        np.ndarray: The principal components.
+    """
     from sklearn import preprocessing
     from sklearn.decomposition import PCA
     
@@ -43,9 +42,10 @@ def fit_PCA(X: np.ndarray, num_components: float = 0.99) -> np.ndarray:
     if type(X) != np.ndarray:
         X = np.array(X)
     
-    # Normalizing data before PCA
-    min_max_scaler = preprocessing.MinMaxScaler()
-    X_norm = min_max_scaler.fit_transform(X)
+    # Normalizing data before PCA if the data isn't already scaled or normalized
+    if X.mean() != 0 and X.max() != 1:
+        min_max_scaler = preprocessing.MinMaxScaler()
+        X_norm = min_max_scaler.fit_transform(X)
     
     # Performing PCA
     pca = PCA(n_components=num_components)
@@ -66,17 +66,19 @@ def fit_PCA(X: np.ndarray, num_components: float = 0.99) -> np.ndarray:
     
 # Oversampling
 def oversample_binary_label(dataframe: pd.DataFrame, label_column: str) -> pd.DataFrame:
-    '''
+    """
     Oversamples a dataframe with a binary label to have an equal proportion in classes. Dynamically
     determines the label with the lower proportion.
     
-    Inputs: 
-        - dataframe: A dataframe containing the label
-        - label_column: A string of the column containing the label
-    Output: A dataframe with the lower proportion label oversampled
+    Args:
+        - dataframe (pd.DataFrame): A dataframe containing the label.
+        - label_column (str): The column containing the label.
     
-    TODO: Update this to oversample the training set and return both the training and testing sets
-    '''
+    Returns: 
+        pd.DataFrame: Dataframe with the lower proportion label oversampled.
+    
+    TODO: Update this to oversample the training set and return both the training and testing sets.
+    """
     
     # Counting the classes
     class_0_count, class_1_count = dataframe[label_column].value_counts()
@@ -107,17 +109,21 @@ def oversample_binary_label(dataframe: pd.DataFrame, label_column: str) -> pd.Da
     return dataframe_oversampled
 
 # Oversampling with SMOTE
-def oversample_smote(training_features, training_labels, is_dataframe=True):
-    '''
+def oversample_smote(training_features: pd.DataFrame or np.ndarray, training_labels: pd.DataFrame or np.ndarray) -> list:
+    """
     Convenience function for oversampling with SMOTE. This generates synthetic samples via interpolation.
     Automatically encodes categorical columns if a dataframe is provided with categorical columns properly marked.
     
-    Input: The training features and labels. is_dataframe is for checking for categorical columns.
-    Output: The oversampled training features and labels
-    '''
+    Args:
+        training_features (pd.DataFrame or np.ndarray): The features that will be used to predict the label.
+        training_labels (pd.DataFrame or np.ndarray): The labels for the training set of the data.
+    
+    Returns: 
+        list: A list containing the oversampled training features and labels.
+    """
     from imblearn import over_sampling
     
-    if is_dataframe == True:
+    if isinstance(training_features, pd.DataFrame):
         # Testing if there are any categorical columns
         # Note: These must have the "category" datatype
         categorical_variable_list = training_features.select_dtypes(exclude=['number', 'bool_', 'object_']).columns
@@ -135,7 +141,7 @@ def oversample_smote(training_features, training_labels, is_dataframe=True):
     
     # Rounding discrete variables for appropriate cutoffs
     # This is becuase SMOTE NC only deals with binary categorical variables, not discrete variables
-    if is_dataframe == True:
+    if isinstance(training_features, pd.DataFrame):
         discrete_variable_list = training_features.select_dtypes(include=['int', 'int32', 'int64']).columns
         if discrete_variable_list.shape[0] > 0:
             discrete_variable_indexes = training_features.columns.get_indexer(discrete_variable_list)
@@ -153,29 +159,26 @@ X_train_oversampled, y_train_oversampled = oversample_smote(X_train, y_train)
 
 
 # Target mean encoding
-def target_encode(train_variable, test_variable, train_label, smoothing=1, min_samples_leaf=1, noise_level=0):
-    '''
+def target_encode(train_variable: np.ndarray, test_variable: np.ndarray, train_label: np.ndarray,
+                  smoothing: int = 1, min_samples_leaf: int = 1, noise_level: int = 0) -> list:
+    """
     Mean target encoding using Daniele Micci-Barreca's technique from the following paper:
     http://helios.mm.di.uoa.gr/~rouvas/ssi/sigkdd/sigkdd.vol3.1/barreca.pdf
     
     This function heavily borrows code from Olivier's Kaggle post:
     https://www.kaggle.com/ogrellier/python-target-encoding-for-categorical-features
     
-    Inputs:
+    Args:
         - train_variable (Series): Variable in the training set to perform the encoding on.
         - test_variable (Series): Variable in the testing set to be transformed.
         - train_label (Series): The label in the training set to use for performing the encoding.
         - smoothing (int): Balances the categorical average vs. the prior.
-        - min_samples_leaf (int): The minimum number of samples to take the category averagesinto account.
+        - min_samples_leaf (int): The minimum number of samples to take the category averages into account.
         - noise_level (int): Amount of Gaussian noise to add in order to help prevent overfitting.
-    '''
-    
-    def add_noise(series, noise_level):
-        '''
-        Adds Gaussian noise to the data
-        '''
-        return series * (1 + noise_level * np.random.randn(len(series)))
-    
+
+    Returns:
+        list: The target encoded training and test variable
+    """
     assert len(train_variable) == len(train_label)
     assert train_variable.name == test_variable.name
     
@@ -214,8 +217,8 @@ def target_encode(train_variable, test_variable, train_label, smoothing=1, min_s
     
     # Adding the noise if there is any
     if noise_level != 0:
-        fitted_train_variable = add_noise(fitted_train_variable, noise_level)
-        fitted_test_variable = add_noise(fitted_test_variable, noise_level)
+        fitted_train_variable = fitted_train_variable * (1 + noise_level * np.random.randn(len(fitted_train_variable)))
+        fitted_test_variable = fitted_test_variable * (1 + noise_level * np.random.randn(len(fitted_test_variable)))
     return fitted_train_variable, fitted_test_variable
 
 
@@ -224,9 +227,16 @@ df['numbers'] / df.groupby('group')['numbers'].transform('sum')
 
 # Finding the max number of bins if using pd.qcut()
 def find_max_qcut_bins(data: np.ndarray, max_bins: int = 25) -> int:
-    '''
-    Returns the max number of bins for pd.qcut()
-    '''
+    """
+    Returns the max number of bins for pd.qcut().
+
+    Args:
+        data (np.ndarray): What we want the bins for.
+        max_bins (int): How many bins we will attempt to go up to.
+
+    Returns:
+        int: The maximum number of bins that pd.qcut() will accept for this data.
+    """
     found_max_bins = False
     while found_max_bins == False:
         try:
