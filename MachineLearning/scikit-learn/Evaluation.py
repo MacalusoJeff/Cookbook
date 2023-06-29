@@ -23,7 +23,17 @@ sns.set_style('ticks')
 pd.set_option('display.max_columns', None)
 
 def binary_eval_metrics(predictions: np.ndarray, labels: np.ndarray) -> dict:
-    '''Returns a dict with various evaluation metrics for binary predictions'''
+    """
+    Computes various evaluation metrics for binary predictions and returns them as a dictionary.
+
+    Args:
+        predictions (numpy.ndarray): The predicted labels (binary) from a binary classification model.
+        labels (numpy.ndarray): The true binary labels corresponding to the predictions.
+
+    Returns:
+        dict: A dictionary containing various evaluation metrics.
+
+    """
     from sklearn import metrics
 
     # Calculating the baseline accuracy if always predicting one label
@@ -47,10 +57,18 @@ def binary_eval_metrics(predictions: np.ndarray, labels: np.ndarray) -> dict:
 ##### Evaluation Plots
 
 # Residuals
-def plot_residuals(model, values, labels):
-    '''
-    Creates two plots: Actual vs. Predicted and Residuals
-    '''
+def plot_residuals(model, values: np.ndarray, labels: np.ndarray) -> None:
+    """
+    Creates two plots: Actual vs. Predicted and Residuals.
+
+    Args:
+        model: The trained regression model.
+        values (np.ndarray): The feature values used for prediction.
+        labels (np.ndarray): The true labels corresponding to the feature values.
+
+    Returns:
+        None.
+    """
     # Calculating the predictions and residuals
     predictions = model.predict(values)
     df_results = pd.DataFrame({'Actual': labels, 'Predicted': predictions})
@@ -74,9 +92,6 @@ def plot_residuals(model, values, labels):
     ax.spines['top'].set_visible(False)  # Removing the top spine
     plt.title('Residuals')
     plt.show()
-    
-    
-plot_residuals(model, X, y)
 
 
 # Learning Curve
@@ -108,10 +123,20 @@ plot_learning_curve(model, X, y)
 
 
 # Validation Curve
-def plot_validation_curve(model, data, labels, param_name, param_values):
-    '''
-    Plots the validation curve of a model using 3-fold Cross Validation
-    '''
+def plot_validation_curve(model, data: np.ndarray, labels: np.ndarray, param_name: str, param_values: list):
+    """
+    Plots the validation curve of a model using 3-fold Cross Validation.
+
+    Args:
+        model: The machine learning model to plot the validation curve for.
+        data (np.ndarray): The input data used for training the model.
+        labels (np.ndarray): The target labels corresponding to the input data.
+        param_name (str): The name of the parameter that will be varied
+        param_values (list): The values to use for the validation plot
+
+    Returns:
+        None.
+    """
     from sklearn.model_selection import validation_curve
     validationCurve = validation_curve(model, X, y, cv=3, param_name=param_name,
                                        param_range=param_values, n_jobs=-1)
@@ -136,22 +161,25 @@ def plot_validation_curve(model, data, labels, param_name, param_values):
 
 param_name = 'n_estimators'
 param_range = [10, 30, 100, 300]
-
 plot_validation_curve(model, X, y, param_name, param_range)
 
 
 # Ensemble Model's Feature Importance
 def plot_ensemble_feature_importance(model, features, top_n_features=None, plot_size=(15, 15), return_dataframe=False):
-    '''
+    """
     Plots the scaled feature importance for an ensemble model. Returns a data frame of these if requested.
     
-    Inputs:
-        - model (): Scikit-learn, LightGBM, or xgboost ensemble model
-        - features (dataframe): The training features
-        - top_n_features (int): The number of features to plot
-        - plot_size (tuple): The size of the output plot
-        - return_dataframe (bool): Whether or not to output a data frame in the results
-    '''
+    Args:
+        model: The trained scikit-learn, LightGBM, or xgboost ensemble model
+        features (pd.DataFrame): The training features
+        top_n_features (int, optional): The number of features to plot
+        plot_size (tuple): The x/y size of the output plot
+        return_dataframe (bool): Whether or not to output a data frame in the results
+    
+    Returns:
+        If return_dataframe is True, returns a pandas DataFrame of the feature importances.
+        Otherwise, returns None.
+    """
     # Putting the feature importances into a data frame
     feature_importances = pd.DataFrame(model.feature_importances_,
                                        index=features.columns,
@@ -177,20 +205,25 @@ def plot_ensemble_feature_importance(model, features, top_n_features=None, plot_
 
 
 # Visualizing the decision tree
-def plot_decision_tree(model, feature_names=None):
-    '''
+def plot_decision_tree(model, feature_names=None) -> None:
+    """
     Plots the decision tree from a scikit-learn DecisionTreeClassifier or DecisionTreeRegressor
     Requires graphviz: https://www.graphviz.org
-    
-    Notes on decision tree visualization:
+
+    Args:
+        model (ensemble model): The trained decision tree model.
+        feature_names (list, optional): The names of the features. Defaults to None.
+
+    Returns:
+        None
+
+    Notes:
         - The Gini score is the level of "impurity" of the node. 
             - Scores closer to 0.5 are more mixed, whereas scores closer to 0 are more homogenous
         - For classification, the colors correspond to different classes
             - The shades are determined by the Gini score. Nodes closer to 0.5 will be lighter.
         - Values contain the number of samples in each category
-    
-    TODO: Add notes on decision tree visualization for regression
-    '''
+    """
     from sklearn.externals.six import StringIO  
     from IPython.display import Image  
     from sklearn.tree import export_graphviz
@@ -208,10 +241,26 @@ def plot_decision_tree(model, feature_names=None):
     
     
 # Visualizing feature importance with SHAP (SHapely Additive exPlanations)
-def explain_features_shap(model, features, max_features_to_show=15):
-    '''
-    TODO: Write explanation
-    '''
+def explain_features_shap(model, features, max_features_to_show=15) -> None:
+    """
+    Visualizes feature importance using SHAP (SHapely Additive exPlanations).
+
+    Args:
+        model: The trained model for which feature importance is explained using SHAP values.
+        features (pd.DataFrame or np.ndarray): The input features used for model predictions.
+        max_features_to_show (int, optional): The maximum number of features to show individual SHAP values for.
+
+    Returns:
+        None
+
+    Notes:
+        - The function requires the SHAP library to be installed. You can install it via pip: `pip install shap`.
+        - SHAP (SHapely Additive exPlanations) is a game-theoretic approach to explain the output of any machine learning model.
+        - The function uses a TreeExplainer to compute SHAP values for the model's predictions.
+        - The overall feature importance is visualized with a bar plot, and the detailed feature importance is shown with a structured scatter plot.
+        - If the number of features is small (<= max_features_to_show), the function displays individual SHAP values for each feature.
+
+    """
     import shap
     
     # Explaining the model's predictions using SHAP values
@@ -235,10 +284,27 @@ def explain_features_shap(model, features, max_features_to_show=15):
 
             
 # Confusion matrix
-def plot_confusion_matrix(label, predictions, classes, normalize=False):
-    '''
-    TODO: Write docstring
-    '''
+def plot_confusion_matrix(label: (np.ndarray, predictions: (np.ndarray, classes, normalize: bool = False) -> None:
+    """
+    Plots the confusion matrix to visualize the performance of a classification model.
+
+    Args:
+        label (np.ndarray): True labels of the data.
+        predictions (np.ndarray): Predicted labels from the classification model.
+        classes (list): List of class labels.
+        normalize (bool, optional): Whether to normalize the confusion matrix. Defaults to False.
+
+    Returns:
+        None
+
+    Notes:
+        - The function requires the scikit-learn library to be installed. You can install it via pip: `pip install scikit-learn`.
+        - The confusion matrix provides a tabular summary of the performance of a classification model.
+        - The rows of the matrix correspond to the true labels, and the columns correspond to the predicted labels.
+        - The diagonal elements represent the correctly classified instances, while off-diagonal elements represent misclassifications.
+        - If `normalize` is set to True, the confusion matrix is normalized by dividing each row by the sum of its elements.
+        - The resulting matrix shows the distribution of predicted classes relative to the true classes.
+    """
     import itertools
     from sklearn import metrics
     
