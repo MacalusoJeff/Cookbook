@@ -38,52 +38,42 @@ cross_val_score(model, X, y, cv=k_fold, n_jobs=-1)
 ##### Hyperparameter tuning
 
 # Random Search
-def hyperparameter_random_search(X, y, model=None, parameters=None, num_folds=5, num_iterations=50):
-    '''
-    Performs a random search on hyperparameters and 
-    '''
+
+def hyperparameter_random_search(X: np.ndarray, y: np.ndarray, model, parameters: dict, num_iterations: int = 50, num_folds: int = 5):
+    """
+    Perform random search for hyperparameter tuning using RandomizedSearchCV.
+
+    Args:
+        X (np.ndarray): The features used to train the model
+        y (np.ndarray): Target values.
+        model (Estimator object): The model to be tuned.
+        param_distributions (dict):
+            Dictionary with parameters names (string) as keys and distributions 
+            or lists of parameters to try as values.
+        num_iterations (int, optional): Number of parameter settings that are sampled.
+        num_folds (int, optional): Number of cross-validation folds.
+
+    Returns:
+        BaseEstimator: Fitted estimator with best hyperparameters.
+    """
     # Randomized Search
-    from sklearn.model_selection import RandomizedSearchCV
-
-    # Providing a parameters for a random forest if parameters are not specified
-    if parameters is None:
-        from scipy.stats import randint as sp_randint
-
-        # Specifying parameters and distributions to sample from
-        parameters = {'max_depth': [3, None],
-                      'max_features': sp_randint(1, X.shape[1]),
-                      'min_samples_split': sp_randint(2, 11),
-                      'min_samples_leaf': sp_randint(1, 11),
-                      'bootstrap': [True, False],
-                      'criterion': ['gini', 'entropy']}
-
-    # Instantiating a model if it isn't provided to the function
-    if model is None:
-        # Picking between a classifier or regressor based on the number of unique labels
-        if len(np.unique(y)) < 50:
-            from sklearn.ensemble import RandomForestClassifier
-            model = RandomForestClassifier(n_jobs=-1)
-        else:
-            from sklearn.ensemble import RandomForestRegressor
-            model = RandomForestRegressor(n_jobs=-1)
-
-    # Performing randomized search
-    model = RandomizedSearchCV(model, param_distributions=parameters,
-                               n_iter=num_iterations, n_jobs=-1, cv=num_folds)
-    model.fit(X, y)
+    randomized_search = RandomizedSearchCV(model, param_distributions=param_distributions,
+                                           n_iter=num_iterations, cv=num_folds)
+    randomized_search.fit(X, y)
 
     # Reporting the results
-    print('Best Estimator:', model.best_estimator_)
-    print('Best Parameters:', model.best_params_)
-    print('Best Score:', model.best_score_)
-    
-    return model
+    print('Best Estimator:', randomized_search.best_estimator_)
+    print('Best Parameters:', randomized_search.best_params_)
+    print('Best Score:', randomized_search.best_score_)
+
+    return randomized_search.best_estimator_
+
 
 # Grid search
 from sklearn.model_selection import GridSearchCV
 
+# Specifying the model and parameters to use
 parameters = {'kernel': ('linear', 'rbf'), 'C': [1, 10]}
-
 svc = svm.SVC()
 
 # Performing grid search
@@ -95,14 +85,24 @@ print('Best Estimator:', model.best_estimator_, '\n',
       'Best Score:', model.best_score_)
 
 # Iteratively training ensemble models
-def iteratively_train_ensemble_model(model, num_trees_to_try, X_train, y_train, X_test, y_test):
-    '''
-    TODO: 
-        - Write docstring
-        - Allow different metrics
-        - Adjust for regression vs. classification
-        - Think of how to add early stopping
-    '''
+# Note: this function needs some more work :)
+def iteratively_train_ensemble_model(model, num_trees_to_try: int, X_train, y_train, X_test, y_test) -> list:
+    """
+    Iteratively trains an ensemble model with different numbers of trees, collects the error for plotting, and returns the testing errors.
+
+    Args:
+        model (Ensemble model object): The ensemble model to be trained.
+        num_trees_to_try (int): The different numbers of trees to try.
+        X_train (np.ndarray): The training features.
+        y_train (np.ndarray): The training labels.
+        X_test (np.ndarray): The test data.
+        y_test (np.ndarray): The test labels.
+
+    Returns:
+        list: A list of testing errors for each number of trees.
+
+    # TODO: Allow different metrics, adjust for regression vs. classification, add total number of trees
+    """
     # Enforcing the model has a warm start for iterative training
     if model.warm_start == False:
         model.set_params(warm_start=True)
@@ -112,21 +112,17 @@ def iteratively_train_ensemble_model(model, num_trees_to_try, X_train, y_train, 
         model.set_params(random_state=46)
         
     # Collecting the error for plotting
-    errors = []
+    testing_error = []
     
     # Iteratively training the model
     for num_trees in num_trees_to_try:
         model.set_params(n_estimators=num_trees)
         print('Fitting with {0} trees'.format(num_trees))
         model.fit(X_train, y_train)
-        errors.append(metrics.log_loss(y_test, model.predict_proba(X_test)))
+        testing_error.append(metrics.log_loss(y_test, model.predict_proba(X_test)))
     
-    # Plotting the error by the number of trees
-    plt.figure(figsize=(9, 5))
-    plt.plot(num_trees_to_try, errors, '-r')
-    plt.title('Error by Number of Trees')
-    plt.xlabel('Number of Trees')
-    plt.ylabel('Error')
+    return testing_errors
+
 
 #################################################################################################################
 ##### Class Probability Cutoffs
@@ -169,10 +165,20 @@ print(xgbResults.mean())
 
 
 # Probability Threshold Search - scikit-learn
-def optimal_probability_cutoff(model, test_dataset, test_labels, max_thresh=0.3, step_size=0.01):
+def optimal_probability_cutoff(model, test_dataset: np.ndarray, test_labels: np.ndarray, max_thresh: float = 0.3, step_size: float = 0.01):
     '''
-    Finds the optimal probability cutoff to maximize the F1 score
-    Returns the optimal probability cutoff, F1 score, and a plot of the results
+    Finds the optimal probability cutoff to maximize the F1 score.
+
+    Args:
+        model: The trained model used for prediction.
+        test_dataset (np.ndarray): The test dataset used for prediction.
+        test_labels (np.ndarray): The true labels of the test dataset.
+        max_thresh (float, optional): The maximum probability threshold to consider. Defaults to 0.3.
+        step_size (float, optional): The step size between probability thresholds. Defaults to 0.01.
+
+    Returns:
+        pd.Series: A pandas Series containing the optimal probability cutoff, F1 score.
+                   The Series index represents the threshold and score.
     '''
     from sklearn import metrics
 
@@ -203,37 +209,37 @@ def optimal_probability_cutoff(model, test_dataset, test_labels, max_thresh=0.3,
     print('Threshold for Optimal F1 Score:')
     return results.iloc[best_index]
 
-
-optimal_probability_cutoff(model, X_test, y_test)
-
 #################################################################################################################
 ##### Prediction Intervals
 
 # Prediction Intervals - Ensemble Scikit-Learn Models
-def ensemble_prediction_intervals(model, X, X_train=None, y_train=None, percentile=0.95):
-    '''
+# This is also a messy function that needs work
+def ensemble_prediction_intervals(model, X: np.ndarray, X_train=None, y_train=None, percentile: float = 0.95) -> pd.DataFrame:
+    """
     Calculates the specified prediction intervals for each prediction
     from an ensemble scikit-learn model.
     
-    Inputs:
-        - model: The scikit-learn model to create prediction intervals for. This must be
-                 either a RandomForestRegressor or GradientBoostingRegressor
-        - X: The input array to create predictions & prediction intervals for
-        - X_train: The training features for the gradient boosted trees
-        - y_train: The training label for the gradient boosted trees
-        - percentile: The prediction interval percentile. Default of 0.95 is 0.025 - 0.975
+    Args:
+        model: 
+            The scikit-learn model to create prediction intervals for. This must be
+            either a RandomForestRegressor or GradientBoostingRegressor
+        X (np.ndarray): The input array to create predictions & prediction intervals for
+        X_train (np.ndarray, optional): The training features for the gradient boosted trees
+        y_train (np.ndarray, optional): The training label for the gradient boosted trees
+        percentile (float): The prediction interval percentile. Default of 0.95 is 0.025 - 0.975
     
     Note: Use X_train and y_train when using a gradient boosted regressor because a copy of
           the model will be re-trained with quantile loss.
           These are not needed for a random forest regressor
     
-    Output: A dataframe with the predictions and prediction intervals for X
+    Returns: 
+        pd.DataFrame: The predictions and prediction intervals for X
     
-    TO-DO: 
+    TODO: 
       - Try to optimize by removing loops where possible
       - Fix upper prediction intervals for gradient boosted regressors
-      - Add xgboost
-    '''
+      - Make work with xgboost and lightgbm
+    """
     # Checking if the model has the estimators_ attribute
     if 'estimators_' not in dir(model):
         print('Not an ensemble model - exiting function')
@@ -302,19 +308,19 @@ def ensemble_prediction_intervals(model, X, X_train=None, y_train=None, percenti
 ##### Ensemble Predictions
   
 # Blending predictions - xgboost
-def blend_xgboost_predictions(train_features, train_labels, prediction_features, num_models=3):
-    '''
-    Trains the number of specified xgboost models and averages the predictions
+def blend_xgboost_predictions(train_features: np.ndarray, train_labels: np.ndarray, prediction_features: np.ndarray, num_models: int = 3) -> np.ndarray:
+    """
+    Trains the number of specified xgboost models and averages the predictions.
     
-    Inputs: 
-        - train_features: A numpy array of the features for the training dataset
-        - train_labels: A numpy array of the labels for the training dataset
-        - prediction_features: A numpy array of the features to create predictions for
-        - num_models: The number of models to train
+    Args: 
+        train_features (np.ndarray): The features for the training dataset
+        train_labels (np.ndarray): The labels for the training dataset
+        prediction_features (np.ndarray): The features to create predictions for
+        num_models (int): The number of models to train
         
-    Outputs:
-        - A numpy array of point or class probability predictions
-    '''
+    Returns:
+        np.ndarray: Point or class probability predictions
+    """
     
     # Auto-detecting if it's a classification problem and setting the objective for the model
     # Adjust the num_classes cutoff if dealing with a high number of classes
@@ -370,22 +376,24 @@ def blend_xgboost_predictions(train_features, train_labels, prediction_features,
     predictions = np.asarray(predictions).mean(axis=0)
     
     return predictions
-  
+
+
 # Blending predictions - Scikit-Learn & LightGBM
-def blend_predictions(model, train_features, train_labels, prediction_features, num_models=3, average_results=False):
-    '''
-    Trains the number of specified scikit-learn or LightGBM models and averages the predictions
+def blend_predictions(model, train_features: np.ndarray, train_labels: np.ndarray, prediction_features: np.ndarray,
+                      num_models: int = 3, average_results: bool = False) -> np.ndarray:
+    """
+    Trains the number of specified scikit-learn or LightGBM models and averages the predictions.
     
-    Inputs: 
-        - train_features (numpy array): The features for the training dataset
-        - train_labels (numpy array): The labels for the training dataset
-        - prediction_features (numpy array): The features to create predictions for
-        - num_models (int): The number of models to train
-        - average_results (bool): Whether or not to return the raw results or the averaged results
+    Args: 
+        train_features (np.ndarray): The features for the training dataset
+        train_labels (np.ndarray): The labels for the training dataset
+        prediction_features (np.ndarray): The features to create predictions for
+        num_models (int): The number of models to train
+        average_results (bool): Whether or not to return the raw results or the averaged results
         
-    Outputs:
-        - A numpy array of point or class probability predictions
-    '''
+    Returns:
+        np.ndarray: A numpy array of point or class probability predictions
+    """
     from sklearn.base import clone
     
     # Auto-detecting if it's a classification problem
@@ -425,81 +433,21 @@ def blend_predictions(model, train_features, train_labels, prediction_features, 
     
     return predictions
 
-
-#################################################################################################################
-##### Feature Selection
-
-def stepwise_logistic_regression(X, y, k_fold=True):
-    '''
-    TODO: 
-        - Write docstring
-        - Fix IndexError for k_fold
-    '''
-    # Enforcing numpy arrays to use X[:, feature_index] instead of X.iloc[:, feature_index] for dataframes
-    X_feature_selection = np.array(X)
-    X_train_feature_selection, X_test_feature_selection, y_train, y_test = train_test_split(
-        X_feature_selection, y, test_size=0.30, random_state=46)
-
-    # Creating a list of the number of features to try in the stepwise selection
-    num_features_list = np.arange(X.shape[1], 2, -1)
-
-    # List of accuracy to be filled within the for loop
-    accuracies = []
-
-    # Testing stepwise feature selection with a different number of features
-    for num_features in num_features_list:
-
-        # Printing the progress at different intervals to not spam the output
-        if num_features % 5 == 0:
-            print('Testing with {0} features'.format(num_features))
-
-        # Using stepwise feature selection to determine which features to select
-        estimator = LogisticRegression()
-        selector = feature_selection.RFE(estimator, num_features, step=1)
-        selector.fit(X_train_feature_selection, y_train)
-        feature_indexes = list(selector.get_support(indices=True))
-        
-        # Training a final model with the specific features selected and gathering the accuracy
-        model = LogisticRegression()
-        
-        # Evaluating with either k-folds cross validation
-        if k_fold == True:
-            # Constructing new X with the updated features
-            X_feature_selection = X_feature_selection[:, feature_indexes]
-            k_fold = KFold(n_splits=5, shuffle=True, random_state=46)
-            mean_accuracy = cross_val_score(model, X_feature_selection, y, cv=5, n_jobs=-1).mean()
-            accuracies.append(mean_accuracy)
-            
-        # Evaluating with the holdout method
-        else:
-            # Constructing new X_train/X_test with the updated features
-            X_train_feature_selection = X_train_feature_selection[:, feature_indexes]
-            X_test_feature_selection = X_test_feature_selection[:, feature_indexes]
-            model.fit(X_train_feature_selection, y_train)
-            accuracy = model.score(X_test_feature_selection, y_test)
-            accuracies.append(accuracy)
-
-    # Putting the results into a data frame and creating a plot of the accuracy by number of features
-    feature_selection_results = pd.DataFrame(
-        {'Accuracy': accuracies, 'NumFeatures': num_features_list})
-    plt.plot(feature_selection_results['NumFeatures'],
-             feature_selection_results['Accuracy'])
-    plt.title('Accuracy by Number of Features')
-    plt.xlabel('Number of Features')
-    plt.ylabel('Accuracy')
-    plt.show()
-
-    # Viewing the output as a sorted data frame
-    return feature_selection_results.sort_values('Accuracy', ascending=False)
-
-
 #################################################################################################################
 ##### Evaluating Clusters
 
-def evaluate_k_means(data, max_num_clusters=10, is_data_scaled=True):
-    '''
-    TODO: Write Docstring
-    '''
+def evaluate_k_means(data: np.ndarray, max_num_clusters: int = 10, is_data_scaled: bool = True) -> list:
+    """
+    Evaluates the K-means clustering algorithm by computing the inertia for different numbers of clusters.
+
+    Args:
+        data (np.ndarray): The input data to be clustered.
+        max_num_clusters (int, optional): The maximum number of clusters to consider. Defaults to 10.
+        is_data_scaled: (bool, optional): Specifies whether the input data is already scaled. Defaults to True.
+
+    Returns:
+        List: A list containing the inertia values for each number of clusters.
+    """
     from sklearn.cluster import KMeans
     
     # Min max scaling the data if it isn't already scaled
@@ -533,10 +481,18 @@ def evaluate_k_means(data, max_num_clusters=10, is_data_scaled=True):
 #################################################################################################################
 ##### Saving & Loading Models
 
-def save_model(model, filepath, add_timestamp=True):
-    '''
-    TODO: Write docstring
-    '''
+def save_model(model, filepath: str, add_timestamp: bool = True) -> None:
+    """
+    Saves a machine learning model to a file.
+
+    Args:
+        model: The trained model object to be saved.
+        filepath (str): The file path (including the file name and extension) where the model will be saved.
+        add_timestamp (bool, optional): Specifies whether to add a timestamp to the file name. Defaults to True.
+
+    Returns:
+        None
+    """
     import os
     
     # Creating the sub directory if it does not exist
