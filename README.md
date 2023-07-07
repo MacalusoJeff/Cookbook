@@ -6,7 +6,7 @@ Personal reference scripts for commonly used code
     - **[scikit-learn](https://github.com/MacalusoJeff/Cookbook/tree/main/MachineLearning/scikit-learn):** Also includes LightGBM and XGBoost
         - [ModelTraining.py](https://github.com/MacalusoJeff/Cookbook/blob/main/MachineLearning/scikit-learn/ModelTraining.py): Cross validation, hyperparameter tuning, feature selection, etc.
         - [Evaluation.py](https://github.com/MacalusoJeff/Cookbook/blob/main/MachineLearning/scikit-learn/Evaluation.py): Evaluation plots, collecting eval metrics, learning curves, feature importance, etc.
-        - [LighTGBM.py](https://github.com/MacalusoJeff/Cookbook/blob/main/MachineLearning/scikit-learn/LightGBM.py): Early stopping and other code that's convenient to copy/paste
+        - [LightGBM.py](https://github.com/MacalusoJeff/Cookbook/blob/main/MachineLearning/scikit-learn/LightGBM.py): Early stopping and other code that's convenient to copy/paste
     - **[TensorFlow](https://github.com/MacalusoJeff/Cookbook/tree/main/MachineLearning/TensorFlow)**
         - [Keras.py](https://github.com/MacalusoJeff/Cookbook/blob/main/MachineLearning/TensorFlow/Keras.py): Commonly used code for Keras
         - [KerasMNIST.py](https://github.com/MacalusoJeff/Cookbook/blob/main/MachineLearning/TensorFlow/KerasMNIST.py): Training a convolutional net on the MNIST data with Keras
