@@ -49,6 +49,41 @@ gbm = lgb.train(params,
 print('Done at {0} iterations'.format(gbm.best_iteration))
 
 
+### Hyperparameter tuning with early stopping
+# Defining a new model object with a large number of estimators since we will be using early stopping
+model = lgb.LGBMRegressor(n_estimators=10000, n_jobs=-1, random_state=46)
 
+# Define the parameter grid for hyperparameter tuning
+# TODO: Update the grid
+param_distributions = {
+    'learning_rate': scipy.stats.uniform(loc=0.01, scale=0.19),  # Default is 0.1
+    'max_depth': [-1, scipy.stats.randint(5, 15)],  # uniform distribution between 5 and 15
+    'num_leaves': scipy.stats.randint(20, 50),  # uniform distribution between 20 and 50
+    'min_child_samples': scipy.stats.randint(20, 50),  # uniform distribution between 20 and 50
+    'boosting_type': ['gbdt', 'dart', 'goss'],
+}
 
+# Configuring the randomized search
+random_search = RandomizedSearchCV(model,
+                                   param_distributions=param_distributions,
+                                   n_iter=20, cv=3,
+                                   scoring='neg_mean_squared_error',
+                                   n_jobs=-1)
 
+# Performing the randomized search with early stopping
+random_search.fit(X_train, y_train,
+                  eval_set=[(X_val, y_val)],
+                  callbacks=[lgb.early_stopping(20)])
+
+# Extracting the parameters from the best model to re-train the model
+# Updating the number of estimators to the best iteration from early stopping
+best_model = random_search.best_estimator_
+optimal_params = best_model.get_params()
+optimal_params['n_estimators'] = best_model.best_iteration_
+
+# Re-training the tuned model
+model = lgb.LGBMRegressor(**optimal_params)  # Inherits n_jobs and random_state from above
+model.fit(X_train, y_train)
+print('Tuned model -')
+print("R^2: ", model.score(X_test, y_test))
+print('MSE: ', mean_squared_error(y_test, model.predict(X_test)))
