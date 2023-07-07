@@ -1,6 +1,39 @@
 import numpy as np
 import pandas as pd
 
+def reduce_memory_usage(df):
+    """
+    Reduces memory usage of a Pandas dataframe by dynamically choosing the lowest integer and floating-point types.
+    
+    Parameters:
+        df (pd.DataFrame): The dataframe to optimize.
+        
+    Returns:
+        pd.DataFrame: The optimized dataframe.
+    """
+    start_mem = df.memory_usage().sum() / 1024 ** 2
+    print(f"Memory usage of dataframe is {start_mem:.2f} MB")
+
+    for col in df.columns:
+        col_data = df[col]
+        col_type = col_data.dtype
+
+        if col_type == 'object':
+            col_data = col_data.astype('category')
+        elif col_type.name == 'category':
+            col_data = col_data.astype('category')
+        elif issubclass(col_type.type, np.integer):
+            col_data = pd.to_numeric(col_data, downcast='integer')
+        elif issubclass(col_type.type, np.floating):
+            col_data = pd.to_numeric(col_data, downcast='float')
+
+        df[col] = col_data
+
+    end_mem = df.memory_usage().sum() / 1024 ** 2
+    print(f"Memory usage after optimization is: {end_mem:.2f} MB")
+    print(f"Decreased by {100 * (start_mem - end_mem) / start_mem:.1f}%")
+
+    return df
 
 # One-hot encoding multiple columns
 df_encoded = pd.get_dummies(df, columns=['a', 'b', 'c'], drop_first=False)
