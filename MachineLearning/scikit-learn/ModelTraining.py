@@ -58,7 +58,7 @@ def hyperparameter_random_search(X: np.ndarray, y: np.ndarray, model, parameters
     """
     # Randomized Search
     randomized_search = RandomizedSearchCV(model, param_distributions=param_distributions,
-                                           n_iter=num_iterations, cv=num_folds)
+                                           n_iter=num_iterations, cv=num_folds, n_jobs=-1, verbose=2)
     randomized_search.fit(X, y)
 
     # Reporting the results
