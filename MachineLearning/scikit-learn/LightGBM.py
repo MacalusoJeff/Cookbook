@@ -53,14 +53,17 @@ print('Done at {0} iterations'.format(gbm.best_iteration))
 # Defining a new model object with a large number of estimators since we will be using early stopping
 model = lgb.LGBMRegressor(n_estimators=10000, n_jobs=-1, random_state=46)
 
-# Define the parameter grid for hyperparameter tuning
-# TODO: Update the grid
+# Define the parameter distributions for hyperparameter tuning
+# Using this guide: https://towardsdatascience.com/beginners-guide-to-the-must-know-lightgbm-hyperparameters-a0005a812702
 param_distributions = {
-    'learning_rate': scipy.stats.uniform(loc=0.01, scale=0.19),  # Default is 0.1
-    'max_depth': [-1, scipy.stats.randint(5, 15)],  # uniform distribution between 5 and 15
-    'num_leaves': scipy.stats.randint(20, 50),  # uniform distribution between 20 and 50
-    'min_child_samples': scipy.stats.randint(20, 50),  # uniform distribution between 20 and 50
-    'boosting_type': ['gbdt', 'dart', 'goss'],
+    'learning_rate': scipy.stats.uniform(loc=0.003, scale=0.19),  # Default is 0.1. Ranges from loc to loc+scale.
+    'num_leaves': scipy.stats.randint(8, 256),  # Default is 31
+    'max_depth': np.append(-1, np.arange(3, 16)),  # Default is -1
+    'min_child_samples': scipy.stats.randint(5, 300),  # Default is 20. AKA min_data_in_leaf.
+    'subsample': scipy.stats.uniform(loc=0.5, scale=0.5),  # Default is 1. AKA bagging_fraction.
+    'colsample_bytree': scipy.stats.uniform(loc=0.5, scale=0.5),  # Default is 1.0. AKA feature_fraction.
+    'reg_alpha': [0, 0.01, 1, 2, 5, 7, 10, 50, 100],  # Default is 0. AKA lambda_l1.
+    'reg_lambda': [0, 0.01, 1, 5, 10, 20, 50, 100]  # Default is 0. AKA lambda_l2.
 }
 
 # Configuring the randomized search
