@@ -56,6 +56,7 @@ model = lgb.LGBMRegressor(n_estimators=10000, n_jobs=-1, random_state=46)
 # Define the parameter distributions for hyperparameter tuning
 # Using this guide: https://towardsdatascience.com/beginners-guide-to-the-must-know-lightgbm-hyperparameters-a0005a812702
 # Parameter documentation: https://lightgbm.readthedocs.io/en/latest/Parameters.html
+# LGBM parameter tuning guide: https://lightgbm.readthedocs.io/en/latest/Parameters-Tuning.html
 param_distributions = {
     'learning_rate': scipy.stats.uniform(loc=0.003, scale=0.19),  # Default is 0.1. Ranges from loc to loc+scale.
     'num_leaves': scipy.stats.randint(8, 256),  # Default is 31
