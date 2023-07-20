@@ -146,3 +146,23 @@ for epoch in range(n_epochs):
         loss.backward()
         optimizer.step()
     
+
+### Dataset for NumPy arrays
+from torch.utils.data import DataLoader, Dataset
+
+class NumpyArrayDataset(Dataset):
+    def __init__(self, root_dir):
+        self.root_dir = root_dir
+        self.file_list = [f for f in os.listdir(root_dir) if f.endswith('.npy')]
+
+    def __len__(self):
+        return len(self.file_list)
+
+    def __getitem__(self, index):
+        file_name = self.file_list[index]
+        file_path = os.path.join(self.root_dir, file_name)
+        numpy_array = np.load(file_path)
+        tensor_array = torch.from_numpy(numpy_array)
+        return tensor_array
+
+dataset = NumpyArrayDataset(path_to_numpy_arrays)
