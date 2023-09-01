@@ -4,10 +4,10 @@ import pandas as pd
 def reduce_memory_usage(df):
     """
     Reduces memory usage of a Pandas dataframe by dynamically choosing the lowest integer and floating-point types.
-    
+
     Parameters:
         df (pd.DataFrame): The dataframe to optimize.
-        
+
     Returns:
         pd.DataFrame: The optimized dataframe.
     """
@@ -58,32 +58,32 @@ df.groupby(['level_1', 'level_2']).size().groupby(level='level_1').apply(lambda 
 def fit_PCA(X: np.ndarray, num_components: float or int = 0.99) -> np.ndarray:
     """
     Performs min-max normalization and PCA transformation on the input data array.
-    
+
     Args:
         X (np.ndarray): Values to perform PCA on.
         num_components (float or int):
             If <1, the percentage of variance explained.
             If >1, the number of principal components.
-    
+
     Returns:
         np.ndarray: The principal components.
     """
     from sklearn import preprocessing
     from sklearn.decomposition import PCA
-    
+
     # Checking if the input is a numpy array and converting it if not
     if type(X) != np.ndarray:
         X = np.array(X)
-    
+
     # Normalizing data before PCA if the data isn't already scaled or normalized
     if X.mean() != 0 and X.max() != 1:
         min_max_scaler = preprocessing.MinMaxScaler()
         X_norm = min_max_scaler.fit_transform(X)
-    
+
     # Performing PCA
     pca = PCA(n_components=num_components)
     pca.fit(X_norm)
-    
+
     # Reporting explained variance
     explained_variance = pca.explained_variance_ratio_ * 100
     print('Total variance % explained:', sum(explained_variance))
@@ -91,38 +91,38 @@ def fit_PCA(X: np.ndarray, num_components: float or int = 0.99) -> np.ndarray:
     print('Variance % explained by principal component:')
     for principal_component in range(len(explained_variance)):
         print(principal_component, ':', explained_variance[principal_component])
-        
+
     # Transforming the data before returning
     principal_components = pca.transform(X_norm)
     return principal_components
- 
-    
+
+
 # Oversampling
 def oversample_binary_label(dataframe: pd.DataFrame, label_column: str) -> pd.DataFrame:
     """
     Oversamples a dataframe with a binary label to have an equal proportion in classes. Dynamically
     determines the label with the lower proportion.
-    
+
     Args:
         - dataframe (pd.DataFrame): A dataframe containing the label.
         - label_column (str): The column containing the label.
-    
-    Returns: 
+
+    Returns:
         pd.DataFrame: Dataframe with the lower proportion label oversampled.
-    
+
     TODO: Update this to oversample the training set and return both the training and testing sets.
     """
-    
+
     # Counting the classes
     class_0_count, class_1_count = dataframe[label_column].value_counts()
-    
+
     # Creating two dataframes for each class
     dataframe_class_0 = dataframe[dataframe[label_column] == dataframe[label_column].unique()[0]]
     dataframe_class_1 = dataframe[dataframe[label_column] == dataframe[label_column].unique()[1]]
-    
+
     # Determining the smaller class
     smaller_label = dataframe[label_column].value_counts().idxmin()
-    
+
     # Oversampling
     if smaller_label == 0:
         dataframe_class_0_oversampled = dataframe_class_0.sample(class_1_count, replace=True)
@@ -130,15 +130,15 @@ def oversample_binary_label(dataframe: pd.DataFrame, label_column: str) -> pd.Da
     else:
         dataframe_class_1_oversampled = dataframe_class_1.sample(class_0_count, replace=True)
         dataframe_oversampled = pd.concat([dataframe_class_0, dataframe_class_1_oversampled], axis=0)
-    
+
     # Printing results
     print('Initial number of observations in each class:')
     print(dataframe[label_column].value_counts())
     print()
-    
+
     print('Oversampled number of observations in each class:')
     print(dataframe_oversampled[label_column].value_counts())
-    
+
     return dataframe_oversampled
 
 # Oversampling with SMOTE
@@ -146,16 +146,16 @@ def oversample_smote(training_features: pd.DataFrame or np.ndarray, training_lab
     """
     Convenience function for oversampling with SMOTE. This generates synthetic samples via interpolation.
     Automatically encodes categorical columns if a dataframe is provided with categorical columns properly marked.
-    
+
     Args:
         training_features (pd.DataFrame or np.ndarray): The features that will be used to predict the label.
         training_labels (pd.DataFrame or np.ndarray): The labels for the training set of the data.
-    
-    Returns: 
+
+    Returns:
         list: A list containing the oversampled training features and labels.
     """
     from imblearn import over_sampling
-    
+
     if isinstance(training_features, pd.DataFrame):
         # Testing if there are any categorical columns
         # Note: These must have the "category" datatype
@@ -166,12 +166,12 @@ def oversample_smote(training_features: pd.DataFrame or np.ndarray, training_lab
             smote = over_sampling.SMOTENC(categorical_features=categorical_variable_indexes, random_state=46, n_jobs=-1)
         else:
             smote = over_sampling.SMOTE(random_state=46, n_jobs=-1)
-    else:        
+    else:
         smote = over_sampling.SMOTE(random_state=46, n_jobs=-1)
-    
+
     # Performing oversampling
     training_features_oversampled, training_labels_oversampled = smote.fit_sample(training_features, training_labels)
-    
+
     # Rounding discrete variables for appropriate cutoffs
     # This is becuase SMOTE NC only deals with binary categorical variables, not discrete variables
     if isinstance(training_features, pd.DataFrame):
@@ -180,12 +180,12 @@ def oversample_smote(training_features: pd.DataFrame or np.ndarray, training_lab
             discrete_variable_indexes = training_features.columns.get_indexer(discrete_variable_list)
             for discrete_variable_index in discrete_variable_indexes:
                 training_features_oversampled[:, discrete_variable_index] = np.round(training_features_oversampled[:, discrete_variable_index].astype(float)).astype(int)
-    
+
     print('Previous training size:', len(training_labels))
     print('Oversampled training size', len(training_labels_oversampled), '\n')
     print('Previous label mean:', training_labels.astype(int).mean())
     print('Oversampled label mean:', training_labels_oversampled.mean())
-    
+
     return training_features_oversampled, training_labels_oversampled
 
 X_train_oversampled, y_train_oversampled = oversample_smote(X_train, y_train)
@@ -197,10 +197,10 @@ def target_encode(train_variable: np.ndarray, test_variable: np.ndarray, train_l
     """
     Mean target encoding using Daniele Micci-Barreca's technique from the following paper:
     http://helios.mm.di.uoa.gr/~rouvas/ssi/sigkdd/sigkdd.vol3.1/barreca.pdf
-    
+
     This function heavily borrows code from Olivier's Kaggle post:
     https://www.kaggle.com/ogrellier/python-target-encoding-for-categorical-features
-    
+
     Args:
         - train_variable (Series): Variable in the training set to perform the encoding on.
         - test_variable (Series): Variable in the testing set to be transformed.
@@ -214,24 +214,24 @@ def target_encode(train_variable: np.ndarray, test_variable: np.ndarray, train_l
     """
     assert len(train_variable) == len(train_label)
     assert train_variable.name == test_variable.name
-    
+
     # Creating a data frame out of the training variable and label in order to get the averages of the label
     # for the training variable
     temp = pd.concat([train_variable, train_label], axis=1)
-    
+
     # Computing the target mean
     averages = temp.groupby(train_variable.name)[train_label.name].agg(['mean', 'count'])
-    
+
     # Computing the smoothing
     smoothing = 1 / (1 + np.exp(-(averages['count'] - min_samples_leaf) / smoothing))
-    
+
     # Calculating the prior before adding the smoothing
     prior = train_label.mean()
-    
+
     # Adding the smoothing to the prior to get the posterior
     # Larger samples will take the average into account less
     averages[train_label.name] = prior * (1 - smoothing) + averages['mean'] * smoothing
-    
+
     # Applying the averages to the training variable
     fitted_train_variable = pd.merge(
         train_variable.to_frame(train_variable.name),
@@ -247,7 +247,7 @@ def target_encode(train_variable: np.ndarray, test_variable: np.ndarray, train_l
         on=test_variable.name, how='left')
     fitted_test_variable = fitted_test_variable['average'].rename(test_variable.name + '_mean').fillna(prior)
     fitted_test_variable.index = fitted_test_variable.index  # Restoring the index lost in pd.merge
-    
+
     # Adding the noise if there is any
     if noise_level != 0:
         fitted_train_variable = fitted_train_variable * (1 + noise_level * np.random.randn(len(fitted_train_variable)))
