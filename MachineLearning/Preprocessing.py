@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-def reduce_memory_usage(df):
+def reduce_memory_usage(df: pd.DataFrame) -> pd.DataFrame:
     """
     Reduces memory usage of a Pandas dataframe by dynamically choosing the lowest integer and floating-point types.
 
