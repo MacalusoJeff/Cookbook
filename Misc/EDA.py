@@ -49,7 +49,7 @@ def percent_missing(dataframe: pd.DataFrame) -> dict:
     Example:
         >>> data = pd.DataFrame({'A': [1, 2, np.nan], 'B': [np.nan, 4, 5], 'C': [6, 7, 8]})
         >>> percent_missing(data)
-        {'A': 33.33333333333333, 'B': 66.66666666666666}
+        {'A': 0.3333, 'B': 0.6666}
 
     Notes:
         - The function requires the pandas library to be installed. You can install it via pip: `pip install pandas`.
