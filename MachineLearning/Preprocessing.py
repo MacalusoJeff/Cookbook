@@ -34,7 +34,8 @@ def reduce_memory_usage(df: pd.DataFrame, drop_homogenous_cols: bool = True) -> 
         # Drop columns with only one unique value
         unique_counts = df.nunique(dropna=False)
         homogenous_columns = unique_counts[unique_counts == 1].index.tolist()
-        print(f"Dropping the following columns with only one unique value: {homogenous_columns}")
+        if len(homogenous_columns) > 0:
+            print(f"Dropping the following columns with only one unique value: {homogenous_columns}")
         df = df.drop(columns=homogenous_columns)
 
     end_mem = df.memory_usage().sum() / 1024 ** 2
