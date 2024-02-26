@@ -286,3 +286,7 @@ def find_max_qcut_bins(data: np.ndarray, max_bins: int = 25) -> int:
             return max_bins
         except:
             max_bins -= 1
+
+
+# Flatten multi-level columns
+df.columns = ["_".join(pair).rstrip("_") for pair in df.columns]
