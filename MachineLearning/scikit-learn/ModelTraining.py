@@ -29,6 +29,10 @@ pd.set_option('display.max_columns', None)
 from sklearn.model_selection import train_test_split
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.30, random_state=46)
 
+# 80/10/10 train/eval/test split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1, random_state=46)
+X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=(0.1 / (1 - 0.1)), random_state=46)
+
 # K-fold cross validation
 from sklearn.model_selection import KFold, cross_val_score
 k_fold = KFold(n_splits=10, shuffle=True, random_state=46)
