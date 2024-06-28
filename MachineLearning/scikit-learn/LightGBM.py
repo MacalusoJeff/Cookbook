@@ -41,9 +41,9 @@ params = {'objective': 'multiclass',  # regression, binary, or multiclass
 # Training the model
 print('Starting training')
 gbm = lgb.train(params,
-                lgb_training_set,
+                train_data,
                 num_boost_round=10000,  # Early stopping should catch this earlier and keep it from overfitting
-                valid_sets=lgb_evaluation_set,
+                valid_sets=val_data,
                 early_stopping_rounds=10,
                 verbose_eval=10)
 print('Done at {0} iterations'.format(gbm.best_iteration))
