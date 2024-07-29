@@ -3,7 +3,7 @@ import xgboost as xgb
 # Train a model with early stopping
 model = xgb.XGBRegressor(early_stopping_rounds=5, n_jobs=-1, random_state=46)
 model.fit(X_train, y_train, eval_set=[(X_val, y_val)], verbose=False)
-print("Stopped on iteration: ", early_stopping_model.best_iteration)
+print("Stopped on iteration: ", model.best_iteration)
 
 
 ### Hyperparameter tune w/ early stopping - using sklearn RandomSearchCV()
