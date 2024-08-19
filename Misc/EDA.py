@@ -20,6 +20,10 @@ sns.set_style('ticks')
 # Displays all dataframe columns
 pd.set_option('display.max_columns', None)
 
+# Force SettingWithCopyWarning to raise an exception instead of a warning
+# This avoids cases where there is ambiguity around if a value was actually assigned
+pd.set_option('mode.chained_assignment', 'raise')
+
 #################################################################################################################
 ##### Exploratory Data Analysis
 
