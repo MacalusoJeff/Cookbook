@@ -15,6 +15,8 @@ def reduce_memory_usage(df: pd.DataFrame, drop_homogenous_cols: bool = True) -> 
     start_mem = df.memory_usage().sum() / 1024 ** 2
     print(f"Memory usage of dataframe is {start_mem:.2f} MB")
 
+    df.drop_duplicates(inplace=True)
+
     for col in df.columns:
         col_data = df[col]
         col_type = col_data.dtype
@@ -36,7 +38,7 @@ def reduce_memory_usage(df: pd.DataFrame, drop_homogenous_cols: bool = True) -> 
         homogenous_columns = unique_counts[unique_counts == 1].index.tolist()
         if len(homogenous_columns) > 0:
             print(f"Dropping the following columns with only one unique value: {homogenous_columns}")
-        df = df.drop(columns=homogenous_columns)
+        df.drop(columns=homogenous_columns, inplace=True)
 
     end_mem = df.memory_usage().sum() / 1024 ** 2
     print(f"Memory usage after optimization is: {end_mem:.2f} MB")
