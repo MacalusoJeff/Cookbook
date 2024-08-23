@@ -22,7 +22,7 @@ sns.set_style('ticks')
 # Displays all dataframe columns
 pd.set_option('display.max_columns', None)
 
-def binary_eval_metrics(predictions: np.ndarray, labels: np.ndarray) -> dict:
+def binary_eval_metrics(predicted_probabilities: np.ndarray, labels: np.ndarray, class_probability_cutoff: float=0.5) -> dict:
     """
     Computes various evaluation metrics for binary predictions and returns them as a dictionary.
 
@@ -36,19 +36,31 @@ def binary_eval_metrics(predictions: np.ndarray, labels: np.ndarray) -> dict:
     """
     from sklearn import metrics
 
-    # Calculating the baseline accuracy if always predicting one label
-    baseline_accuracy = labels.mean()
-    if baseline_accuracy < 0.5:
-        baseline_accuracy = 1 - baseline_accuracy
+    # Extract the probability of the positive class if both classes are present
+    if predicted_probabilities.ndim > 1:
+        predicted_probabilities = predicted_probabilities[:, 1]
 
-    # Filling the dict with various metrics
+    # Generate the binary predictions based on the class_probability
+    predictions = (predicted_probabilities > class_probability_cutoff).astype(int)
+
+    # Calculate baseline accuracy with various methods
+    zero_rule_accuracy = max(labels.mean(), 1 - labels.mean())  # Always predict the most common class
+    uniform_random_predictions = np.random.binomial(n=1, p=0.5, size=len(labels))  # Randomly predict 0 or 1
+    uniform_random_accuracy = metrics.accuracy_score(labels, uniform_random_predictions)
+    label_distribution_predictions = np.random.binomial(n=1, p=labels.mean(), size=len(labels))  # Randomly predict based on the label distribution
+    label_distribution_accuracy = metrics.accuracy_score(labels, label_distribution_predictions)
+
+    # Calculate model metrics and fill the dict to return
     results = {}
-    results['Baseline Accuracy'] = baseline_accuracy
+    results['Zero Rule Baseline Accuracy'] = zero_rule_accuracy
+    results['Uniform Random Baseline Accuracy'] = uniform_random_accuracy
+    results['Label Distribution Baseline Accuracy'] = label_distribution_accuracy
     results['Accuracy'] = metrics.accuracy_score(labels, predictions)
-    results['AUC'] = metrics.roc_auc_score(labels, predictions)
-    results['F1'] = metrics.f1_score(labels, predictions)
     results['Precision'] = metrics.precision_score(labels, predictions)
     results['Recall'] = metrics.recall_score(labels, predictions)
+    results['F1'] = metrics.f1_score(labels, predictions)
+    results['AUC'] = metrics.roc_auc_score(labels, predicted_probabilities)
+    results['Average Precision (PR AUC)'] = metrics.average_precision_score(labels, predicted_probabilities)
 
     return results
 
