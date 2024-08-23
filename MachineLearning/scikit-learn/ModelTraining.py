@@ -35,6 +35,44 @@ val_size = 0.1
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=46)
 X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=(val_size / (1 - test_size)), random_state=46)
 
+# Train/val/test split by index, to be used when there is a datetime
+def train_val_test_split_by_index(X: np.ndarray, y: np.ndarray, test_size: float=0.1, val_size: float=0.1):
+    """
+    Split the data into train, validation, and test sets by index. Can be used
+    for time series data, assumes the data is already sorted.
+
+    Parameters:
+    - X (np.ndarray): Features array.
+    - y (np.ndarray): Target array.
+    - test_size (float): Proportion of the data to include in the test split.
+    - val_size (float): Proportion of the data to include in the validation split.
+
+    Returns:
+    - X_train (np.ndarray): Features for the training set.
+    - X_val (np.ndarray): Features for the validation set.
+    - X_test (np.ndarray): Features for the test set.
+    - y_train (np.ndarray): Target for the training set.
+    - y_val (np.ndarray): Target for the validation set.
+    - y_test (np.ndarray): Target for the test set.
+    """
+    # Calculate the number of samples for each set
+    num_samples = X.shape[0]
+    num_test = int(num_samples * test_size)
+    num_val = int(num_samples * val_size)
+    num_train = num_samples - num_test - num_val
+
+    # Split the data
+    X_train = X[:num_train]
+    X_val = X[num_train:(num_train + num_val)]
+    X_test = X[(num_train + num_val):]
+
+    y_train = y[:num_train]
+    y_val = y[num_train:(num_train + num_val)]
+    y_test = y[(num_train + num_val):]
+
+    return X_train, X_val, X_test, y_train, y_val, y_test
+
+
 # K-fold cross validation
 from sklearn.model_selection import KFold, cross_val_score
 k_fold = KFold(n_splits=10, shuffle=True, random_state=46)
