@@ -22,6 +22,10 @@ sns.set_style('ticks')
 # Displays all dataframe columns
 pd.set_option('display.max_columns', None)
 
+# Force SettingWithCopyWarning to raise an exception instead of a warning
+# This avoids cases where there is ambiguity around if a value was actually assigned
+pd.set_option('mode.chained_assignment', 'raise')
+
 def binary_eval_metrics(predicted_probabilities: np.ndarray, labels: np.ndarray, class_probability_cutoff: float=0.5) -> dict:
     """
     Computes various evaluation metrics for binary predictions and returns them as a dictionary.
