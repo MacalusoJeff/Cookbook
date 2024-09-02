@@ -4,6 +4,10 @@ import seaborn as sns
 
 %matplotlib inline
 
+# Formatting for seaborn plots
+sns.set_context('notebook', font_scale=1.1)
+sns.set_style('ticks')
+
 #################################################################################################################
 ### Plotting cluster averages and standard deviations around the average for two variables
 # Assumes df has one row for each cluster and columns for the values and standard deviations
