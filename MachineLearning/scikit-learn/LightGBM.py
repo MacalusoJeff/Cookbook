@@ -18,10 +18,9 @@ params = {
 }
 
 # Train the model with early stopping
-model = lgb.LGBMRegressor(n_jobs=-1, random_state=46, **params)
+model = lgb.LGBMRegressor(early_stopping_rounds=100, n_jobs=-1, random_state=46, **params)
 model.fit(X_train, y_train,
-          eval_set=[(X_val, y_val)],
-          callbacks=[lgb.early_stopping(100)])
+          eval_set=[(X_val, y_val)])
 print(f'Done at {model.best_iteration_} iterations')
 
 # Predict on the test set
