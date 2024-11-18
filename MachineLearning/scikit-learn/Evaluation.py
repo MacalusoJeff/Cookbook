@@ -361,3 +361,61 @@ def plot_confusion_matrix(label: (np.ndarray, predictions: (np.ndarray, classes,
     plt.tight_layout()
     plt.ylabel('True label')
     plt.xlabel('Predicted label')
+
+
+# Calibration curves and histograms of predicted probabilities
+def plot_calibration_curves(models: dict, X: np.ndarray, y: np.ndarray, n_bins: int=10) -> None:
+    """
+    Plot combined calibration curves and separate shorter histograms of predicted probabilities for multiple classifiers.
+
+    Parameters:
+    models (dict): A dictionary where keys are classifier names and values are classifier instances.
+    X (array-like): Feature matrix (test data).
+    y (array-like): Target vector (test data).
+    n_bins (int): Number of bins to discretize the [0, 1] interval.
+
+    Returns:
+    None
+    """
+    from matplotlib import gridspec
+    import matplotlib.pyplot as plt
+    from sklearn.calibration import calibration_curve
+
+    fig = plt.figure(figsize=(12, 12))
+    gs = gridspec.GridSpec(4, 3, height_ratios=[3, 1, 1, 1])  # Adjust height ratios to make the calibration curve taller
+    model_probabilities = {}  # To avoid making predictions multiple times
+
+    # Plot combined calibration curves
+    ax0 = plt.subplot(gs[0, :])
+    colors = plt.get_cmap('tab10')
+
+    for idx, (name, model) in enumerate(models.items()):
+        if hasattr(model, "predict_proba"):
+            prob_pos = model.predict_proba(X)[:, 1]
+        else:  # use decision function
+            prob_pos = model.decision_function(X)
+            prob_pos = (prob_pos - prob_pos.min()) / (prob_pos.max() - prob_pos.min())
+
+        model_probabilities[name] = prob_pos
+        fraction_of_positives, mean_predicted_value = calibration_curve(y, prob_pos, n_bins=n_bins)
+
+        ax0.plot(mean_predicted_value, fraction_of_positives, "s-", label=f"{name}", color=colors(idx))
+
+    ax0.plot([0, 1], [0, 1], "k:", label="Perfectly calibrated")
+    ax0.set_xlabel("Mean predicted value")
+    ax0.set_ylabel("Fraction of positives")
+    ax0.legend()
+    ax0.set_title('Combined Calibration plots (reliability curve)')
+    ax0.grid(True)
+
+    # Plot separate shorter histograms
+    for idx, (name, model) in enumerate(models.items()):
+        ax = plt.subplot(gs[(idx // 3) + 1, idx % 3])
+        ax.hist(model_probabilities[name], range=(0, 1), bins=n_bins, histtype="stepfilled", lw=2, color=colors(idx))
+        ax.set_xlabel("Predicted probability")
+        ax.set_ylabel("Frequency")
+        ax.set_title(f'Histogram of predicted probabilities ({name})')
+        ax.grid(True)
+
+    plt.tight_layout()
+    plt.show()
