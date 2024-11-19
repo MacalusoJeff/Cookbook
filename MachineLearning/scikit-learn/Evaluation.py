@@ -419,3 +419,31 @@ def plot_calibration_curves(models: dict, X: np.ndarray, y: np.ndarray, n_bins: 
 
     plt.tight_layout()
     plt.show()
+
+
+def get_model_coefficients(model, feature_names: list) -> dict:
+    """
+    Extracts the coefficients and intercept from a linear or logistic regression model.
+
+    Parameters:
+    model (sklearn.linear_model): The trained linear or logistic regression model.
+    feature_names (list): The names of the features used in the model.
+
+    Returns:
+    dict: A dictionary with feature names as keys and their corresponding coefficients as values, including the intercept.
+    """
+    # Check if the model has the attribute 'coef_' and 'intercept_'
+    if not hasattr(model, 'coef_') or not hasattr(model, 'intercept_'):
+        raise ValueError("The model does not have coefficients or intercept attributes.")
+
+    # Extract coefficients and intercept
+    coefficients = model.coef_.flatten()
+    intercept = model.intercept_
+
+    # Create a dictionary with feature names and their corresponding coefficients
+    coef_dict = {feature: coef for feature, coef in zip(feature_names, coefficients)}
+
+    # Add the intercept to the dictionary
+    coef_dict['intercept'] = intercept
+
+    return coef_dict
